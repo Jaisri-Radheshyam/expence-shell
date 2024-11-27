@@ -40,29 +40,28 @@ VALIDATE $? "Disable default nodejs"
 dnf module enable nodejs:20 -y &>>$LOG_FILE
 VALIDATE $? "Enable nodejs:20"
 
-dnf install nodejs -y&>>$LOG_FILE
+dnf install nodejs -y &>>$LOG_FILE
 VALIDATE $? "Install nodejs"
 
 id expense &>>$LOG_FILE
 if [ $? -ne 0 ]
 then
-    echo -e "expense user not exists...&G creating $N"
-    useradd expense &>>$LOG_FILE
+    echo -e "expense user not exists... $G Creating $N"
     useradd expense &>>$LOG_FILE
     VALIDATE $? "Creating expense user"
 else
     echo -e "expense user already exists...$Y SKIPPING $N"
 fi
 
-mkdir -p /app 
-VALIDATE $? "creating app folder"
+mkdir -p /app
+VALIDATE $? "Creating /app folder"
 
 curl -o /tmp/backend.zip https://expense-builds.s3.us-east-1.amazonaws.com/expense-backend-v2.zip &>>$LOG_FILE
 VALIDATE $? "Downloading backend application code"
 
 cd /app
 rm -rf /app/* # remove the existing code
-unzip /tmp/backend.zip &>>LOG_FILE
+unzip /tmp/backend.zip &>>$LOG_FILE
 VALIDATE $? "Extracting backend application code"
 
 npm install &>>$LOG_FILE
@@ -73,14 +72,14 @@ cp /home/ec2-user/expense-shell/backend.service /etc/systemd/system/backend.serv
 dnf install mysql -y &>>$LOG_FILE
 VALIDATE $? "Installing MySQL Client"
 
-mysql -h mysql.daws-81s.fun -uroot -pExpenseApp@1 < /app/schema/backend.sql
+mysql -h mysql.daws-81s.fun -uroot -pExpenseApp@1 < /app/schema/backend.sql &>>$LOG_FILE
 VALIDATE $? "Schema loading"
 
-systemctl daemon-reload
-VALIDATE $? "Daemon reload" &>>LOG_FILE
+systemctl daemon-reload &>>$LOG_FILE
+VALIDATE $? "Daemon reload"
 
-systemctl start backend
+systemctl enable backend &>>$LOG_FILE
 VALIDATE $? "Enabled backend"
 
-systemctl enable backend
+systemctl restart backend &>>$LOG_FILE
 VALIDATE $? "Restarted Backend"

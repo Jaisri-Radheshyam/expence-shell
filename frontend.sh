@@ -43,17 +43,17 @@ VALIDATE $? "Enable Nginx"
 systemctl start nginx &>>$LOG_FILE
 VALIDATE $? "Start Nginx"
 
-rm -rf /usr/share/nginx/html/*
+rm -rf /usr/share/nginx/html/* &>>$LOG_FILE
 VALIDATE $? "Removing default website"
 
 curl -o /tmp/frontend.zip https://expense-builds.s3.us-east-1.amazonaws.com/expense-frontend-v2.zip &>>$LOG_FILE
-VALIDATE $? "Downloading frontend code"
+VALIDATE $? "Downloding frontend code"
 
 cd /usr/share/nginx/html
 unzip /tmp/frontend.zip &>>$LOG_FILE
 VALIDATE $? "Extract frontend code"
 
-cp /home/ec2-user/expense-shell/expense.conf /etc/systemd/system/backend.service
+cp /home/ec2-user/expense-shell/expense.conf /etc/nginx/default.d/expense.conf
 VALIDATE $? "Copied expense conf"
 
 systemctl restart nginx &>>$LOG_FILE
